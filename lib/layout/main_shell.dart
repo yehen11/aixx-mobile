@@ -5,7 +5,6 @@
 import 'package:aixx/themes/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../themes/theme.dart';
 import '../widgets/aixx_bottom_nav_bar.dart';
 
 class MainShell extends StatelessWidget {
