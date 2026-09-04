@@ -25,12 +25,16 @@ class MobileNumberField extends StatefulWidget {
   final TextEditingController? controller;
   final CountryCode initialCode;
   final ValueChanged<CountryCode>? onCodeChanged;
+  final ValueChanged<String>? onChanged;
+  final String? errorText;
 
   const MobileNumberField({
     super.key,
     this.controller,
     this.initialCode = const CountryCode('🇱🇰', '+94'),
     this.onCodeChanged,
+    this.onChanged,
+    this.errorText,
   });
 
   @override
@@ -100,6 +104,7 @@ class _MobileNumberFieldState extends State<MobileNumberField> {
                 child: TextField(
                   controller: widget.controller,
                   keyboardType: TextInputType.phone,
+                  onChanged: widget.onChanged,
                   style: TextStyle(color: onSurfaceColor, fontSize: 16),
                   decoration: InputDecoration(
                     hintText: '8123 4567',
@@ -116,6 +121,17 @@ class _MobileNumberFieldState extends State<MobileNumberField> {
             ],
           ),
         ),
+        if (widget.errorText != null)
+          Padding(
+            padding: const EdgeInsets.only(left: 4, top: 6),
+            child: Text(
+              widget.errorText!,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.red,
+              ),
+            ),
+          ),
       ],
     );
   }
