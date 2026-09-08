@@ -2,6 +2,7 @@
 @Author - yehenSamarasinghe
 @Date - 2026/08/27
 */
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../layout/main_shell.dart';
 import '../modules/auth/view/screens/auth_screen.dart';
@@ -10,6 +11,9 @@ import '../modules/quiz/view/screens/quiz_screen.dart';
 import '../modules/profile/view/screens/profile_screen.dart';
 import '../modules/certificate/view/screens/certificate_screen.dart';
 import '../routes/app_routes.dart';
+import '../modules/course/view/screens/course_detail_screen.dart';
+import '../modules/course/view/screens/course_contents_screen.dart';
+import '../modules/course/model/course_model.dart';
 
 GoRouter getRouter(String initialRoute) {
   return GoRouter(
@@ -18,6 +22,20 @@ GoRouter getRouter(String initialRoute) {
       GoRoute(
         path: AppRoutes.auth,
         builder: (context, state) => const AuthScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.courseDetail,
+        builder: (context, state) {
+          final course = state.extra as CourseModel;
+          return CourseDetailScreen(course: course);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.courseContents,
+        builder: (context, state) {
+          final course = state.extra as CourseModel;
+          return CourseContentsScreen(course: course);
+        },
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
