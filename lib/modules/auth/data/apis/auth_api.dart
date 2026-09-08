@@ -9,7 +9,7 @@ import '../../model/sign_up_model.dart';
 
 
 class AuthApi {
-  static const String _signUpEndpoint = '/auth/signup';
+  static const String _signUpEndpoint = '/api/auth/register';
 
   Future<Response> signUp(SignUpModel model) {
     return ApiClient.dio.post(_signUpEndpoint, data: model.toJson());
