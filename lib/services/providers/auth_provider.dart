@@ -14,7 +14,7 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) => AuthRepository(
 /// in the register/login response (token / accessToken / jwt / etc.)
 /// and update the single line marked below once she replies. Nothing
 /// else in the app needs to change when that happens.
-const String kTokenResponseField = 'token';
+const String kTokenResponseField = 'accessToken';
 
 /// Handles the sign-up call and saves the returned JWT token.
 /// Per Backend_API_Documentation.docx: POST /api/auth/register

@@ -14,6 +14,9 @@ import '../routes/app_routes.dart';
 import '../modules/course/view/screens/course_detail_screen.dart';
 import '../modules/course/view/screens/course_contents_screen.dart';
 import '../modules/course/model/course_model.dart';
+import '../modules/quiz/view/screens/quiz_session_screen.dart';
+import '../modules/quiz/view/screens/module_results_screen.dart';
+import '../modules/quiz/model/submit_result_model.dart';
 
 GoRouter getRouter(String initialRoute) {
   return GoRouter(
@@ -37,6 +40,30 @@ GoRouter getRouter(String initialRoute) {
           return CourseContentsScreen(course: course);
         },
       ),
+
+      GoRoute(
+  path: AppRoutes.quizSession,
+  builder: (context, state) {
+    final args = state.extra as QuizSessionArgs;
+
+    return QuizSessionScreen(
+      args: args,
+    );
+  },
+),
+
+GoRoute(
+        path: AppRoutes.moduleResults,
+        builder: (context, state) {
+          final result =
+              state.extra as SubmitResultModel;
+
+          return ModuleResultsScreen(
+            result: result,
+          );
+        },
+      ),
+
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             MainShell(navigationShell: navigationShell),
