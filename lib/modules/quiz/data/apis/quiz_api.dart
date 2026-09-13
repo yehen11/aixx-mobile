@@ -2,7 +2,6 @@ import '../../../../services/core/api_client.dart';
 import '../../model/question_model.dart';
 import '../../model/submit_result_model.dart';
 
-
 const bool kUseMockQuizData = true;
 
 class QuizApi {
@@ -71,13 +70,20 @@ class QuizApi {
 
       // Fake a plausible score for UI testing.
       final fakeScore = (answers.length * 0.7).round();
+      final fakePercentage =
+          answers.isEmpty ? 0.0 : (fakeScore / answers.length) * 100;
 
       return SubmitResultModel(
-        result: 'SCORED',
+        result: ResultRecord(
+          id: 0,
+          alumniId: 0,
+          moduleId: moduleId,
+          score: fakeScore,
+          state: 'SCORED',
+          createdAt: DateTime.now(),
+        ),
         score: fakeScore,
-        percentage: answers.isEmpty
-            ? 0
-            : (fakeScore / answers.length) * 100,
+        percentage: fakePercentage,
         totalQuestions: answers.length,
       );
     }

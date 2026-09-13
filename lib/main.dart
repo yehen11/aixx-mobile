@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'router/app_router.dart';
 import 'routes/app_routes.dart';
 import 'themes/theme.dart';
+import 'modules/dashboard/view/screens/dashboard_screen.dart';
 
 void main() {
   runApp(const ProviderScope(child: AixxAcademyApp()));
@@ -23,5 +24,11 @@ class AixxAcademyApp extends StatelessWidget {
       theme: AppTheme.darkTheme,
       routerConfig: router,
     );
+    // return MaterialApp(
+    //   title: 'AIXX Academy',
+    //   debugShowCheckedModeBanner: false,
+    //   theme: AppTheme.darkTheme,
+    //   home: DashboardScreen(),
+    // );
   }
 }
