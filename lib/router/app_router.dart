@@ -17,6 +17,7 @@ import '../modules/course/model/course_model.dart';
 import '../modules/quiz/view/screens/quiz_session_screen.dart';
 import '../modules/quiz/view/screens/module_results_screen.dart';
 import '../modules/quiz/model/submit_result_model.dart';
+import '../modules/profile/view/screens/results_history_screen.dart'; 
 
 GoRouter getRouter(String initialRoute) {
   return GoRouter(
@@ -62,6 +63,12 @@ GoRoute(
             result: result,
           );
         },
+      ),
+
+      GoRoute(
+        path: AppRoutes.resultsHistory,
+        builder: (context, state) =>
+            const ResultsHistoryScreen(),
       ),
 
       StatefulShellRoute.indexedStack(

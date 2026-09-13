@@ -14,4 +14,5 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String certificates = '/certificates';
   static const String courseContents = '/course-contents';
+  static const String resultsHistory = '/results-history';
 }

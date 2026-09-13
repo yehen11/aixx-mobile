@@ -34,6 +34,7 @@ class DashboardScreen extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         CircleAvatar(
                           radius: 16,
@@ -41,16 +42,10 @@ class DashboardScreen extends ConsumerWidget {
                           child: Icon(Icons.person, size: 18, color: mutedTextColor),
                         ),
                         const SizedBox(width: 10),
-                        Text(
-                          'AIXX',
-                          style: TextStyle(
-                            color: onSurfaceColor,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 18,
-                          ),
-                        ),
+                        
                       ],
                     ),
+                    Image.asset('assets/images/aixx_logo.png', height: 30),
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
