@@ -4,14 +4,81 @@
 */
 
 import 'package:dio/dio.dart';
+
 import '../../../../services/core/api_client.dart';
-import '../../model/sign_up_model.dart';
+import '../../model/login_request.dart';
+import '../../model/register_request.dart';
+import 'i_auth_api.dart';
 
+class AuthApi implements IAuthApi {
+  @override
+  Future<Response> register(RegisterRequest request) {
+    return ApiClient.dio.post(
+      '/auth/register',
+      data: request.toJson(),
+    );
+  }
 
-class AuthApi {
-  static const String _signUpEndpoint = '/api/auth/register';
+  @override
+  Future<Response> verifyOtp({
+    required String email,
+    required String otp,
+  }) {
+    return ApiClient.dio.post(
+      '/auth/verify-otp',
+      data: {
+        'email': email,
+        'otp': otp,
+      },
+    );
+  }
 
-  Future<Response> signUp(SignUpModel model) {
-    return ApiClient.dio.post(_signUpEndpoint, data: model.toJson());
+  @override
+  Future<Response> resendOtp(String email) {
+    return ApiClient.dio.post(
+      '/auth/resend-otp',
+      data: {
+        'email': email,
+      },
+    );
+  }
+
+  @override
+  Future<Response> login(LoginRequest request) {
+    return ApiClient.dio.post(
+      '/auth/login',
+      data: request.toJson(),
+    );
+  }
+
+  @override
+  Future<Response> forgotPassword(String email) {
+    return ApiClient.dio.post(
+      '/auth/forgot-password',
+      data: {
+        'email': email,
+      },
+    );
+  }
+
+  @override
+  Future<Response> resetPassword({
+    required String email,
+    required String otp,
+    required String password,
+  }) {
+    return ApiClient.dio.post(
+      '/auth/reset-password',
+      data: {
+        'email': email,
+        'otp': otp,
+        'password': password,
+      },
+    );
+  }
+
+  @override
+  Future<Response> logout() {
+    return ApiClient.dio.post('/auth/logout');
   }
 }

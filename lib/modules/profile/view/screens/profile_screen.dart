@@ -6,6 +6,7 @@ import '../../../../routes/app_routes.dart';
 import '../../../../services/providers/profile_provider.dart';
 import '../../../../themes/utils.dart';
 import '../../model/update_profile_request.dart';
+import '../../../../services/core/logout_handler.dart';
 
 /// Profile screen.
 ///
@@ -108,6 +109,57 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           _saving = false;
         });
       }
+    }
+  }
+
+    Future<void> _confirmLogout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: surfaceCards,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(kCardRadius),
+          ),
+          title: Text(
+            'Log out?',
+            style: TextStyle(
+              color: onSurfaceColor,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          content: Text(
+            'You\'ll need to sign in again to access your account.',
+            style: TextStyle(
+              color: mutedTextColor,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: mutedTextColor),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(
+                'Log Out',
+                style: TextStyle(
+                  color: errorColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      if (!mounted) return;
+      await performLogout(ref, context);
     }
   }
 
@@ -535,6 +587,37 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         'View Past Results',
                         style: TextStyle(
                           color: onSurfaceColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+
+                      
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () => _confirmLogout(),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    side: BorderSide(color: errorColor.withOpacity(0.4)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(kCardRadius),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.logout, size: 18, color: errorColor),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Log Out',
+                        style: TextStyle(
+                          color: errorColor,
                           fontWeight: FontWeight.w600,
                         ),
                       ),

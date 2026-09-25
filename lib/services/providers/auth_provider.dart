@@ -1,41 +1,108 @@
-/*
-@Author - yehenSamarasinghe
-@Date - 2026/09/01
-*/
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../modules/auth/data/apis/auth_api.dart';
+import '../../modules/auth/data/apis/i_auth_api.dart';
+import '../../modules/auth/data/apis/mock_auth_api.dart';
 import '../../modules/auth/data/repositories/auth_repository.dart';
-import '../../modules/auth/model/sign_up_model.dart';
-import '../core/token_storage.dart';
+import '../../modules/auth/model/login_request.dart';
+import '../../modules/auth/model/register_request.dart';
+import '../../modules/auth/model/register_response.dart';
 
-final authRepositoryProvider = Provider<AuthRepository>((ref) => AuthRepository());
+const bool useTestMode = true;
 
-/// PLACEHOLDER field name — ask the backend developer for the real key
-/// in the register/login response (token / accessToken / jwt / etc.)
-/// and update the single line marked below once she replies. Nothing
-/// else in the app needs to change when that happens.
-const String kTokenResponseField = 'accessToken';
-
-/// Handles the sign-up call and saves the returned JWT token.
-/// Per Backend_API_Documentation.docx: POST /api/auth/register
-/// "Signs & returns a 24h JWT token" — we must save it so future
-/// requests (like fetching courses) can attach it automatically.
-//final authRepositoryProvider = Provider<AuthRepository>((ref) => AuthRepository());
-
-final signUpUserProvider =
-    FutureProvider.family<bool, SignUpModel>((ref, model) async {
-  final repo = ref.read(authRepositoryProvider);
-  final response = await repo.signUp(model);
-
-  final success = response.statusCode == 200 || response.statusCode == 201;
-  if (!success) return false;
-
-  // TODO: update kTokenResponseField above once the backend developer
-  // confirms the real field name — this is the only line that changes.
-  final token = response.data[kTokenResponseField] as String?;
-  if (token != null) {
-    await TokenStorage.saveToken(token);
+final authApiProvider = Provider<IAuthApi>((ref) {
+  if (useTestMode) {
+    return MockAuthApi();
   }
 
-  return token != null;
+  return AuthApi();
 });
+
+final authRepositoryProvider = Provider<AuthRepository>((ref) {
+  return AuthRepository(
+    ref.read(authApiProvider),
+  );
+});
+
+final signUpUserProvider =
+    FutureProvider.family<RegisterResponse, RegisterRequest>((ref, request) async {
+  final repository = ref.read(authRepositoryProvider);
+
+  final response = await repository.register(request);
+
+  return RegisterResponse.fromJson(response.data as Map<String, dynamic>);
+});
+
+final verifyOtpProvider = FutureProvider.family<Map<String, dynamic>, Map<String, String>>(
+  (ref, data) async {
+    final repository = ref.read(authRepositoryProvider);
+
+    final response = await repository.verifyOtp(
+      email: data['email']!,
+      otp: data['otp']!,
+    );
+
+    return response.data as Map<String, dynamic>;
+  },
+);
+
+final resendOtpProvider =
+    FutureProvider.family<String, String>(
+  (ref, email) async {
+    final repository = ref.read(authRepositoryProvider);
+
+    final response = await repository.resendOtp(email);
+
+    final data = response.data as Map<String, dynamic>;
+
+    return data['message'] as String? ?? 'OTP sent successfully.';
+  },
+);
+
+final loginProvider =
+    FutureProvider.family<Map<String, dynamic>, LoginRequest>(
+  (ref, request) async {
+    final repository = ref.read(authRepositoryProvider);
+
+    final response = await repository.login(request);
+
+    return response.data as Map<String, dynamic>;
+  },
+);
+
+final forgotPasswordProvider =
+    FutureProvider.family<String, String>(
+  (ref, email) async {
+    final repository = ref.read(authRepositoryProvider);
+
+    final response = await repository.forgotPassword(email);
+
+    final data = response.data as Map<String, dynamic>;
+
+    return data['message'] as String? ??
+        'Password reset instructions have been sent.';
+  },
+);
+
+final resetPasswordProvider = FutureProvider.family<
+    String,
+    ({
+      String email,
+      String otp,
+      String password,
+    })>(
+  (ref, data) async {
+    final repository = ref.read(authRepositoryProvider);
+
+    final response = await repository.resetPassword(
+      email: data.email,
+      otp: data.otp,
+      password: data.password,
+    );
+
+    final responseData = response.data as Map<String, dynamic>;
+
+    return responseData['message'] as String? ??
+        'Password reset successfully.';
+  },
+);

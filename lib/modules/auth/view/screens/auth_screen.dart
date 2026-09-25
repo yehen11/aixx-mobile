@@ -12,7 +12,8 @@ import '../../../../widgets/mobile_number_field.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../services/providers/auth_provider.dart';
 import '../../../../validation/validators/auth_validators.dart';
-import '../../model/sign_up_model.dart';
+import '../../model/register_request.dart';
+import '../../model/register_response.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -27,6 +28,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   final _mobileController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _countryController = TextEditingController();
   String _language = 'english';
   String _countryCode = '+94';
   bool _isLoading = false;
@@ -45,6 +47,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     _mobileController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _countryController.dispose();
     super.dispose();
   }
 
@@ -91,41 +94,37 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     );
 
     try {
-      final model = SignUpModel(
+      final model = RegisterRequest(
         fullName: _fullNameController.text.trim(),
         email: _emailController.text.trim(),
-        countryCode: _countryCode,
-        mobileNumber: _mobileController.text.trim(),
-        preferredLanguage: _language,
+        phone: '$_countryCode${_mobileController.text.trim()}',
         password: _passwordController.text,
+        country: _countryController.text.trim(),
       );
 
       // Test mode is runtime-controlled so the analyzer does not flag the branch as dead code.
       final testMode = _isTestModeEnabled();
 
-      late final bool success;
-      if (testMode) {
-        // Simulate network delay
-        await Future.delayed(const Duration(seconds: 2));
-        success = true; // Change to false to test error scenario
-      } else {
-        success = await ref.read(signUpUserProvider(model).future);
-      }
+      final RegisterResponse result = await ref.read(
+        signUpUserProvider(model).future,
+      );
 
-      if (!mounted) return;
+if (!mounted) return;
 
-      if (success) {
-        print('Successful signup for: ${model.email}');
-        context.go(AppRoutes.dashboard);
-      } else {
-        _showError('Sign up failed. Please try again.');
-      }
+print('Successful signup for: ${result.email}');
+
+// Temporary: navigate to OTP in the next step.
+if (!mounted) return;
+Navigator.of(context).pop();
+context.go(
+  AppRoutes.otp,
+  extra: result.email,
+);
     } catch (error) {
       if (!mounted) return;
       _showError('Sign up failed: $error');
     } finally {
       if (mounted) {
-        Navigator.of(context).pop();
         setState(() => _isLoading = false);
       }
     }
@@ -209,6 +208,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                           errorText: _mobileError,
                         ),
                         const SizedBox(height: 16),
+                        GlassTextField(
+                          label: 'Country',
+                          hint: 'United States',
+                          icon: Icons.location_on_outlined,
+                          controller: _countryController,
+                        ),
+                        const SizedBox(height: 16),
                         GlassDropdown<String>(
                           label: 'Preferred Language',
                           icon: Icons.language,
@@ -269,10 +275,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: () {
-                              //context.go(AppRoutes.dashboard);
-                              _isLoading ? null : _submit();
-                            },
+                            onPressed: _isLoading ? null : _submit,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: actionHighlight,
                               foregroundColor: Colors.white,
@@ -297,20 +300,23 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                         const SizedBox(height: 20),
                         Divider(color: glossOutline),
                         const SizedBox(height: 12),
-                        RichText(
-                          text: TextSpan(
-                            style:
-                                TextStyle(fontSize: 14, color: mutedTextColor),
-                            children: [
-                              const TextSpan(text: 'Already have an account? '),
-                              TextSpan(
-                                text: 'Sign In',
-                                style: TextStyle(
-                                  color: actionHighlight,
-                                  fontWeight: FontWeight.w600,
+                        InkWell(
+                          onTap:() => context.push(AppRoutes.login),
+                          child: RichText(
+                            text: TextSpan(
+                              style:
+                                  TextStyle(fontSize: 14, color: mutedTextColor),
+                              children: [
+                                const TextSpan(text: 'Already have an account? '),
+                                TextSpan(
+                                  text: 'Sign In',
+                                  style: TextStyle(
+                                    color: actionHighlight,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ],

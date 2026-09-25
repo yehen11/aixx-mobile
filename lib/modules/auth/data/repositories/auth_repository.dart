@@ -1,13 +1,52 @@
 import 'package:dio/dio.dart';
-import '../../model/sign_up_model.dart';
-import '../apis/auth_api.dart';
+import '../apis/i_auth_api.dart';
+import '../../model/login_request.dart';
+import '../../model/register_request.dart';
 
-/// Business-facing repository — matches adgo-mobile's pattern.
-/// Returns the raw Dio Response; the provider parses it.
 class AuthRepository {
-  final AuthApi _api = AuthApi();
+  final IAuthApi _api;
 
-  Future<Response> signUp(SignUpModel model) {
-    return _api.signUp(model);
+  AuthRepository(this._api);
+
+  Future<Response> register(RegisterRequest request) {
+    return _api.register(request);
+  }
+
+  Future<Response> verifyOtp({
+    required String email,
+    required String otp,
+  }) {
+    return _api.verifyOtp(
+      email: email,
+      otp: otp,
+    );
+  }
+
+  Future<Response> resendOtp(String email) {
+    return _api.resendOtp(email);
+  }
+
+  Future<Response> login(LoginRequest request) {
+    return _api.login(request);
+  }
+
+  Future<Response> forgotPassword(String email) {
+    return _api.forgotPassword(email);
+  }
+
+  Future<Response> resetPassword({
+    required String email,
+    required String otp,
+    required String password,
+  }) {
+    return _api.resetPassword(
+      email: email,
+      otp: otp,
+      password: password,
+    );
+  }
+
+  Future<Response> logout() {
+    return _api.logout();
   }
 }
