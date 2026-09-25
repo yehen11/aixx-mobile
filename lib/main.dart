@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'modules/auth/view/screens/otp_screen.dart';
 import 'router/app_router.dart';
 import 'routes/app_routes.dart';
 import 'themes/theme.dart';
@@ -16,7 +17,7 @@ class AixxAcademyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-     final router = getRouter(AppRoutes.auth);
+     final router = getRouter(AppRoutes.login);
      
     return MaterialApp.router(
       title: 'AIXX Academy',
@@ -28,7 +29,7 @@ class AixxAcademyApp extends StatelessWidget {
     //   title: 'AIXX Academy',
     //   debugShowCheckedModeBanner: false,
     //   theme: AppTheme.darkTheme,
-    //   home: DashboardScreen(),
+    //   home: OtpScreen(email: 'user@example.com',),
     // );
   }
 }

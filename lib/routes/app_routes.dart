@@ -6,6 +6,7 @@ class AppRoutes {
   AppRoutes._();
 
   static const String auth = '/auth';
+  static const String otp = '/otp';
   static const String dashboard = '/dashboard';
   static const String courseDetail = '/course-detail';
   static const String quiz = '/quiz';
@@ -15,4 +16,7 @@ class AppRoutes {
   static const String certificates = '/certificates';
   static const String courseContents = '/course-contents';
   static const String resultsHistory = '/results-history';
+  static const String login = '/login';
+  static const String forgotPassword = '/forgot-password';
+  static const String resetPassword = '/reset-password';
 }
