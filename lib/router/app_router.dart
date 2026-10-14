@@ -19,9 +19,11 @@ import '../modules/course/view/screens/course_contents_screen.dart';
 import '../modules/course/model/course_model.dart';
 import '../modules/quiz/view/screens/quiz_session_screen.dart';
 import '../modules/quiz/view/screens/module_results_screen.dart';
-import '../modules/quiz/model/submit_result_model.dart';
 import '../modules/profile/view/screens/results_history_screen.dart';
 import '../modules/auth/view/screens/otp_screen.dart';
+import '../modules/quiz/view/screens/study_material_screen.dart';
+import '../modules/quiz/view/screens/final_assessment_screen.dart';
+import '../modules/quiz/view/screens/final_assessment_results_screen.dart';
 
 GoRouter getRouter(String initialRoute) {
   return GoRouter(
@@ -55,16 +57,29 @@ GoRouter getRouter(String initialRoute) {
           );
         },
       ),
-      GoRoute(
-        path: AppRoutes.moduleResults,
-        builder: (context, state) {
-          final result = state.extra as SubmitResultModel;
 
-          return ModuleResultsScreen(
-            result: result,
-          );
-        },
-      ),
+      GoRoute(
+  path: AppRoutes.finalAssessment,
+  builder: (context, state) {
+    final args = state.extra as FinalAssessmentArgs;
+    return FinalAssessmentScreen(args: args);
+  },
+),
+GoRoute(
+  path: AppRoutes.finalAssessmentResults,
+  builder: (context, state) {
+    final args = state.extra as FinalAssessmentResultsArgs;
+    return FinalAssessmentResultsScreen(args: args);
+  },
+),
+
+      GoRoute(
+  path: AppRoutes.moduleResults,
+  builder: (context, state) {
+    final args = state.extra as ModuleResultsArgs;
+    return ModuleResultsScreen(args: args);
+  },
+),
       GoRoute(
         path: AppRoutes.resultsHistory,
         builder: (context, state) => const ResultsHistoryScreen(),
@@ -94,6 +109,15 @@ GoRouter getRouter(String initialRoute) {
           return ResetPasswordScreen(email: email);
         },
       ),
+
+      GoRoute(
+  path: AppRoutes.studyMaterial,
+  builder: (context, state) {
+    final args = state.extra as QuizSessionArgs;
+    return StudyMaterialScreen(args: args);
+  },
+),
+
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             MainShell(navigationShell: navigationShell),

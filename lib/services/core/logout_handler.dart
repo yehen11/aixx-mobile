@@ -11,9 +11,7 @@ Future<void> performLogout(WidgetRef ref, BuildContext context) async {
   await TokenStorage.clearToken();
 
   // Fire-and-forget: don't block navigation on this
-  ref.read(authRepositoryProvider).logout().catchError((_) {
-    // Backend logout failure is non-blocking; token is already cleared locally
-  });
+  ref.read(authRepositoryProvider).logout().then((_) {}, onError: (_) {});
 
   // Clear cached per-user state so the next login doesn't show stale data
   ref.invalidate(profileProvider);

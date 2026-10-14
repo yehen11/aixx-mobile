@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import '../../../../services/core/api_client.dart';
 import '../../model/course_model.dart';
+import '../../model/course_progress_model.dart';
 import '../../model/module_model.dart';
 
-/// Course API — supports both mock data (now) and the real backend
-/// (once hosted), controlled by [kUseMockCourseData].
+/// Course API — supports both mock data (now) and the real backend,
+/// controlled by [kUseMockCourseData].
 ///
-/// Real endpoints, per Backend_API_Documentation.docx Section 3.3:
-///   GET /api/course-cms/courses      (Bearer JWT required)
-///   GET /api/course-cms/courses/:id  (Bearer JWT required)
+/// Confirmed real endpoints (27/09/2026):
+///   GET /api/courses                  (public, no auth needed)
+///   GET /api/courses/{slug}/contents  (lists modules + progress, ordered by module_index)
+///
+/// NOTE: /api/course-cms/courses is admin-only and must never be used here.
 const bool kUseMockCourseData = true;
 
 class CourseApi {
@@ -18,38 +21,79 @@ class CourseApi {
       return [
         CourseModel(
           id: 1,
+          slug: 'general-ai-knowledge-for-everyday-life',
           title: 'General AI Knowledge for Everyday Life',
           description:
               'The free foundation course covering AI basics, everyday AI tools, '
               'using AI responsibly, and how AI is changing work and life.',
-          moduleCount: 5,
+          subTitle: 'Foundation course',
+          isFree: true,
+          badges: const ['Free', 'Foundation'],
+          modulesCount: 5,
+          totalMcqsCount: 150,
+          highlights: const ['AI basics', 'Everyday AI tools', 'Responsible AI use'],
+          thumbnailUrl: null,
           icon: Icons.auto_awesome,
         ),
       ];
     }
 
-    // Real API call — requires a valid saved token (see TokenStorage).
-    final response = await ApiClient.dio.get('/api/course-cms/courses');
-    final List data = response.data as List;
-    return data.map((json) => CourseModel.fromJson(json)).toList();
+    // Public endpoint — no auth required.
+    final response = await ApiClient.dio.get('/courses');
+    final List data = response.data['data'] as List;
+    return data.map((json) => CourseModel.fromJson(json as Map<String, dynamic>)).toList();
   }
 
-  Future<List<ModuleModel>> getModules(int courseId) async {
+  Future<({CourseProgress progress, List<ModuleModel> modules})> getModules(
+    String courseSlug,
+  ) async {
     if (kUseMockCourseData) {
       await Future.delayed(const Duration(milliseconds: 300));
-      return [
-        ModuleModel(id: 1, courseId: courseId, title: 'AI Basics', description: ''),
-        ModuleModel(id: 2, courseId: courseId, title: 'AI in Everyday Life', description: ''),
-        ModuleModel(id: 3, courseId: courseId, title: 'Using AI Tools', description: ''),
-        ModuleModel(id: 4, courseId: courseId, title: 'AI, Work and the Future', description: ''),
-        ModuleModel(id: 5, courseId: courseId, title: 'Safe & Responsible AI', description: ''),
+
+      const titles = [
+        'Module 1: AI Basics',
+        'Module 2: AI in Everyday Life',
+        'Module 3: Using AI Tools',
+        'Module 4: AI, Work and the Future',
+        'Module 5: Safe & Responsible AI',
       ];
+
+      return (
+        progress: CourseProgress(
+          id: 1,
+          name: 'General AI Knowledge for Everyday Life',
+          slug: courseSlug,
+          totalModules: 5,
+          completedModulesCount: 0,
+          progressCounter: '0/5 Completed',
+          progressPercentage: 0,
+          isAllCompleted: false,
+        ),
+        modules: List.generate(5, (i) {
+          return ModuleModel(
+            id: i + 1,
+            moduleIndex: i + 1,
+            title: titles[i],
+            studyNotes: null,
+            questionsCount: 6,
+            status: 'Available',
+            isCompleted: false,
+            score: null,
+            passed: false,
+            actionUrl: '/courses/$courseSlug/modules/${i + 1}',
+          );
+        }),
+      );
     }
 
-    // Real API returns the course object with a nested "modules" array
-    // (per Section 3.3: "includes child Module records").
-    final response = await ApiClient.dio.get('/api/course-cms/courses/$courseId');
-    final List modules = response.data['modules'] as List;
-    return modules.map((json) => ModuleModel.fromJson(json)).toList();
+    final response = await ApiClient.dio.get('/courses/$courseSlug/contents');
+    final data = response.data as Map<String, dynamic>;
+
+    return (
+      progress: CourseProgress.fromJson(data['course'] as Map<String, dynamic>),
+      modules: (data['modules'] as List)
+          .map((m) => ModuleModel.fromJson(m as Map<String, dynamic>))
+          .toList(),
+    );
   }
 }

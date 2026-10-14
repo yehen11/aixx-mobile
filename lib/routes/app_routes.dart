@@ -19,4 +19,7 @@ class AppRoutes {
   static const String login = '/login';
   static const String forgotPassword = '/forgot-password';
   static const String resetPassword = '/reset-password';
+  static const String studyMaterial = '/study-material';
+  static const String finalAssessment = '/final-assessment';
+  static const String finalAssessmentResults = '/final-assessment-results';
 }
