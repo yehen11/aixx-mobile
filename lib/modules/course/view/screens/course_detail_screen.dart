@@ -143,7 +143,7 @@ class CourseDetailScreen extends StatelessWidget {
                           Icon(Icons.layers_outlined, size: 16, color: successColor),
                           const SizedBox(width: 6),
                           Text(
-                            '${course.moduleCount} MODULES',
+                            '${course.modulesCount} MODULES',
                             style: TextStyle(
                               color: successColor,
                               fontWeight: FontWeight.w700,

@@ -1,28 +1,40 @@
-/// Module model — matches the REAL backend schema exactly
-/// (Backend_API_Documentation.docx, Section 5: Module table).
-/// Real fields: id (Int), title, description, courseId (Int FK).
-/// No `theme`, `sequence`, or `questionCount` on the backend —
-/// display order uses the list index; question count per module
-/// requires a separate call to the Assessment API (Day 5).
 class ModuleModel {
   final int id;
-  final int courseId;
+  final int moduleIndex;
   final String title;
-  final String description;
+  final String? studyNotes;
+  final int questionsCount;
+  final String status; // "Available" or "Completed" — exact, case-sensitive
+  final bool isCompleted;
+  final double? score;
+  final bool passed;
+  final String actionUrl;
 
   ModuleModel({
     required this.id,
-    required this.courseId,
+    required this.moduleIndex,
     required this.title,
-    required this.description,
+    required this.studyNotes,
+    required this.questionsCount,
+    required this.status,
+    required this.isCompleted,
+    required this.score,
+    required this.passed,
+    required this.actionUrl,
   });
 
   factory ModuleModel.fromJson(Map<String, dynamic> json) {
     return ModuleModel(
       id: json['id'] as int,
-      courseId: json['courseId'] as int,
+      moduleIndex: json['module_index'] as int,
       title: json['title'] as String,
-      description: json['description'] as String? ?? '',
+      studyNotes: json['study_notes'] as String?,
+      questionsCount: json['questions_count'] as int,
+      status: json['status'] as String,
+      isCompleted: json['is_completed'] as bool? ?? false,
+      score: (json['score'] as num?)?.toDouble(),
+      passed: json['passed'] as bool? ?? false,
+      actionUrl: json['action_url'] as String,
     );
   }
 }

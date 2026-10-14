@@ -1,22 +1,19 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../config/app_config.dart';
+import '../../modules/quiz/data/apis/i_quiz_api.dart';
+import '../../modules/quiz/data/apis/mock_quiz_api.dart';
+import '../../modules/quiz/data/apis/quiz_api.dart';
 import '../../modules/quiz/data/repositories/quiz_repository.dart';
-import '../../modules/quiz/model/question_model.dart';
 
-/// Provides the QuizRepository instance.
-final quizRepositoryProvider = Provider<QuizRepository>(
-  (ref) => QuizRepository(),
-);
+final quizApiProvider = Provider<IQuizApi>((ref) {
+  if (useTestMode) {
+    return MockQuizApi();
+  }
 
-/// Provides questions for a specific module.
-///
-/// The questions are fetched when the quiz session screen
-/// requests this provider.
-final quizQuestionsProvider =
-    FutureProvider.family<List<QuestionModel>, int>(
-  (ref, moduleId) async {
-    final repository = ref.read(quizRepositoryProvider);
+  return QuizApi();
+});
 
-    return repository.getQuestions(moduleId);
-  },
-);
+final quizRepositoryProvider = Provider<QuizRepository>((ref) {
+  return QuizRepository(ref.read(quizApiProvider));
+});

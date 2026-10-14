@@ -1,23 +1,32 @@
-import '../../model/question_model.dart';
-import '../../model/submit_result_model.dart';
-import '../apis/quiz_api.dart';
+import 'package:dio/dio.dart';
+
+import '../apis/i_quiz_api.dart';
 
 class QuizRepository {
-  final QuizApi _api = QuizApi();
+  final IQuizApi _api;
 
-  /// Get all questions for a module.
-  Future<List<QuestionModel>> getQuestions(int moduleId) {
-    return _api.getQuestions(moduleId);
+  QuizRepository(this._api);
+
+  Future<Response> startAttempt({int? trainingId, String? trainingSlug}) {
+    return _api.startAttempt(
+      trainingId: trainingId,
+      trainingSlug: trainingSlug,
+    );
   }
 
-  /// Submit the learner's answers for a module.
-  Future<SubmitResultModel> submitAnswers({
-    required int moduleId,
-    required List<SubmitAnswer> answers,
+  Future<Response> submitAnswer({
+    required int attemptId,
+    required int attemptQuestionId,
+    required String selectedOption,
   }) {
-    return _api.submitAnswers(
-      moduleId: moduleId,
-      answers: answers,
+    return _api.submitAnswer(
+      attemptId: attemptId,
+      attemptQuestionId: attemptQuestionId,
+      selectedOption: selectedOption,
     );
+  }
+
+  Future<Response> completeAttempt(int attemptId) {
+    return _api.completeAttempt(attemptId);
   }
 }

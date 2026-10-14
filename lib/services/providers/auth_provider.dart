@@ -7,8 +7,9 @@ import '../../modules/auth/data/repositories/auth_repository.dart';
 import '../../modules/auth/model/login_request.dart';
 import '../../modules/auth/model/register_request.dart';
 import '../../modules/auth/model/register_response.dart';
+import '../../config/app_config.dart';
 
-const bool useTestMode = true;
+//const bool useTestMode = true;
 
 final authApiProvider = Provider<IAuthApi>((ref) {
   if (useTestMode) {

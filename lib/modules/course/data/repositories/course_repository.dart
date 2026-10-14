@@ -1,4 +1,5 @@
 import '../../model/course_model.dart';
+import '../../model/course_progress_model.dart';
 import '../../model/module_model.dart';
 import '../apis/course_api.dart';
 
@@ -7,6 +8,8 @@ class CourseRepository {
 
   Future<List<CourseModel>> getCourses() => _api.getCourses();
 
-  Future<List<ModuleModel>> getModules(int courseId) =>
-      _api.getModules(courseId);
+  Future<({CourseProgress progress, List<ModuleModel> modules})> getModules(
+    String courseSlug,
+  ) =>
+      _api.getModules(courseSlug);
 }
