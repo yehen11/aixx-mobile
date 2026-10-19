@@ -24,6 +24,7 @@ import '../modules/auth/view/screens/otp_screen.dart';
 import '../modules/quiz/view/screens/study_material_screen.dart';
 import '../modules/quiz/view/screens/final_assessment_screen.dart';
 import '../modules/quiz/view/screens/final_assessment_results_screen.dart';
+import '../modules/certificate/view/screens/certificate_detail_screen.dart';
 
 GoRouter getRouter(String initialRoute) {
   return GoRouter(
@@ -72,6 +73,14 @@ GoRoute(
     return FinalAssessmentResultsScreen(args: args);
   },
 ),
+
+      GoRoute(
+        path: AppRoutes.certificateDetail,
+        builder: (context, state) {
+          final id = state.extra as int;
+          return CertificateDetailScreen(certificateId: id);
+        },
+      ),
 
       GoRoute(
   path: AppRoutes.moduleResults,

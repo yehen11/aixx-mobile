@@ -22,4 +22,5 @@ class AppRoutes {
   static const String studyMaterial = '/study-material';
   static const String finalAssessment = '/final-assessment';
   static const String finalAssessmentResults = '/final-assessment-results';
+  static const String certificateDetail = '/certificate-detail';
 }
