@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import 'router/app_router.dart';
 import 'routes/app_routes.dart';
+import 'services/core/api_client.dart';
 import 'services/core/token_storage.dart';
+import 'services/providers/profile_provider.dart';
 import 'themes/theme.dart';
 
 Future<void> main() async {
@@ -12,8 +14,22 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final router = getRouter(await _resolveInitialRoute());
+  final container = ProviderContainer();
 
-  runApp(ProviderScope(child: AixxAcademyApp(router: router)));
+  // The API rejected the stored token (401). api_client.dart has already
+  // cleared it, so drop per-user cached data and send the user to Login.
+  ApiClient.onUnauthorized = () {
+    container.invalidate(profileProvider);
+    container.invalidate(resultHistoryProvider);
+    router.go(AppRoutes.login);
+  };
+
+  runApp(
+    UncontrolledProviderScope(
+      container: container,
+      child: AixxAcademyApp(router: router),
+    ),
+  );
 }
 
 /// Stay logged in: go straight to the Dashboard when a token is stored,
