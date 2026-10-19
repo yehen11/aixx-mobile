@@ -171,9 +171,13 @@ class FinalAssessmentResultsScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    if (passed) {
-                      // TODO: pass result.certificateId to the Certificate screen once it is built.
-                      context.go(AppRoutes.certificates);
+                      if (passed) {
+                      final id = result.certificateId;
+                      if (id != null) {
+                        context.push(AppRoutes.certificateDetail, extra: id);
+                      } else {
+                        context.go(AppRoutes.certificates);
+                      }
                     } else {
                       context.pushReplacement(AppRoutes.finalAssessment, extra: args.assessment);
                     }

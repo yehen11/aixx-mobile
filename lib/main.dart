@@ -8,6 +8,7 @@ import 'services/core/api_client.dart';
 import 'services/core/token_storage.dart';
 import 'services/providers/profile_provider.dart';
 import 'themes/theme.dart';
+import 'services/providers/certificate_provider.dart';
 
 Future<void> main() async {
   // Needed before touching secure storage ahead of runApp.
@@ -21,6 +22,7 @@ Future<void> main() async {
   ApiClient.onUnauthorized = () {
     container.invalidate(profileProvider);
     container.invalidate(resultHistoryProvider);
+    container.invalidate(certificateListProvider);
     router.go(AppRoutes.login);
   };
 

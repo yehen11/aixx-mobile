@@ -9,6 +9,7 @@ import '../../../../themes/utils.dart';
 import '../../model/attempt_model.dart';
 import '../../model/complete_result_model.dart';
 import 'final_assessment_results_screen.dart' show FinalAssessmentResultsArgs;
+import '../../../../services/providers/certificate_provider.dart';
 
 /// Arguments for the course-level final assessment.
 /// training_id == course id (confirmed by backend).
@@ -40,6 +41,7 @@ class _FinalAssessmentScreenState extends ConsumerState<FinalAssessmentScreen> {
 
   // Set when the backend answers 409 ALREADY_PASSED.
   bool _alreadyPassed = false;
+  int? _certificateId;
 
   int _currentIndex = 0;
 
@@ -140,6 +142,7 @@ class _FinalAssessmentScreenState extends ConsumerState<FinalAssessmentScreen> {
       if (e.response?.statusCode == 409 && data is Map && data['code'] == 'ALREADY_PASSED') {
         setState(() {
           _alreadyPassed = true;
+          _certificateId = (data['certificate_id'] as num?)?.toInt();
           _loading = false;
         });
         return;
@@ -200,6 +203,10 @@ class _FinalAssessmentScreenState extends ConsumerState<FinalAssessmentScreen> {
       final result = CompleteResultModel.fromJson(response.data as Map<String, dynamic>);
 
       if (!mounted) return;
+
+         if (result.passed) {
+           ref.invalidate(certificateListProvider);
+         }
 
       context.pushReplacement(
         AppRoutes.finalAssessmentResults,
@@ -275,8 +282,14 @@ class _FinalAssessmentScreenState extends ConsumerState<FinalAssessmentScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                // TODO: pass _certificateId to the Certificate screen once it is built.
-                onPressed: () => context.go(AppRoutes.certificates),
+                  onPressed: () {
+                  final id = _certificateId;
+                  if (id != null) {
+                    context.push(AppRoutes.certificateDetail, extra: id);
+                  } else {
+                    context.go(AppRoutes.certificates);
+                  }
+                },
                 style: _primaryButtonStyle(),
                 child: const Text('View Certificate', style: TextStyle(fontWeight: FontWeight.w600)),
               ),
