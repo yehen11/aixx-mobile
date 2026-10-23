@@ -24,10 +24,10 @@ class CourseProgress {
       id: json['id'] as int,
       name: json['name'] as String,
       slug: json['slug'] as String,
-      totalModules: json['total_modules'] as int,
-      completedModulesCount: json['completed_modules_count'] as int,
+      totalModules: (json['total_modules'] as num).toInt(),
+      completedModulesCount: (json['completed_modules_count'] as num).toInt(),
       progressCounter: json['progress_counter'] as String,
-      progressPercentage: json['progress_percentage'] as int,
+      progressPercentage: (json['progress_percentage'] as num).toInt(),
       isAllCompleted: json['is_all_completed'] as bool,
     );
   }

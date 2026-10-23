@@ -14,6 +14,7 @@ class CourseModel {
   final List<String> highlights;
   final String? thumbnailUrl;
   final IconData icon; // frontend-only, not a backend field
+  final String type; // courses, elearning, free_courses, certification, newsletters, ...
 
   CourseModel({
     required this.id,
@@ -28,6 +29,7 @@ class CourseModel {
     required this.highlights,
     required this.thumbnailUrl,
     this.icon = Icons.auto_awesome,
+    this.type = 'courses',
   });
 
   factory CourseModel.fromJson(Map<String, dynamic> json) {
@@ -41,8 +43,13 @@ class CourseModel {
       badges: (json['badges'] as List?)?.map((b) => b as String).toList() ?? [],
       modulesCount: json['modules_count'] as int? ?? 0,
       totalMcqsCount: json['total_mcqs_count'] as int? ?? 0,
-      highlights: (json['highlights'] as List?)?.map((h) => h as String).toList() ?? [],
+      highlights: (json['highlights'] as List?)
+              ?.map((h) => (h as String).trim())
+              .where((h) => h.isNotEmpty)
+              .toList() ??
+          [],
       thumbnailUrl: json['thumbnail_url'] as String?,
+      type: json['type'] as String? ?? '',
     );
   }
 }

@@ -51,7 +51,7 @@ class ModuleQuizContent {
       courseName: json['course_name'] as String,
       moduleIndex: json['module_index'] as int,
       title: json['title'] as String,
-      studyNotes: json['study_notes'] as String,
+      studyNotes: json['study_notes'] as String?,
       totalQuestions: json['total_questions'] as int,
       questions: (json['questions'] as List)
           .map((q) => ModuleQuizQuestion.fromJson(q as Map<String, dynamic>))

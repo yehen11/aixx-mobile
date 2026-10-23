@@ -3,6 +3,7 @@ import '../../../../services/core/api_client.dart';
 import '../../model/course_model.dart';
 import '../../model/course_progress_model.dart';
 import '../../model/module_model.dart';
+import '../../../../config/app_config.dart';
 
 /// Course API — supports both mock data (now) and the real backend,
 /// controlled by [kUseMockCourseData].
@@ -12,7 +13,7 @@ import '../../model/module_model.dart';
 ///   GET /api/courses/{slug}/contents  (lists modules + progress, ordered by module_index)
 ///
 /// NOTE: /api/course-cms/courses is admin-only and must never be used here.
-const bool kUseMockCourseData = true;
+const bool kUseMockCourseData = useTestMode;
 
 class CourseApi {
   Future<List<CourseModel>> getCourses() async {

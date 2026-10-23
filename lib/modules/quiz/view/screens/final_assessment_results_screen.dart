@@ -135,7 +135,7 @@ class FinalAssessmentResultsScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Your answer: ${item.selectedOption}',
+                          'Your answer: ${item.selectedOption ?? 'Not answered'}',
                           style: TextStyle(color: mutedTextColor, fontSize: 12),
                         ),
                         const SizedBox(height: 12),
