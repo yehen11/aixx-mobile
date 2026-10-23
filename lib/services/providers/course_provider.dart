@@ -7,9 +7,19 @@ import '../../modules/course/model/module_model.dart';
 final courseRepositoryProvider =
     Provider<CourseRepository>((ref) => CourseRepository());
 
+/// Content types the app lists as courses. GET /courses also returns
+/// newsletters, seminars and workshops. Confirm this list with the backend.
+const Set<String> kListedCourseTypes = {
+  'courses',
+  'elearning',
+  'free_courses',
+  'certification',
+};
+
 final courseListProvider = FutureProvider<List<CourseModel>>((ref) async {
   final repo = ref.read(courseRepositoryProvider);
-  return repo.getCourses();
+  final all = await repo.getCourses();
+  return all.where((c) => kListedCourseTypes.contains(c.type)).toList();
 });
 
 /// Modules within a specific course — now keyed by slug, not id,

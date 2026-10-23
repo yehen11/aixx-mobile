@@ -2,7 +2,7 @@
 class QuestionBreakdown {
   final int questionId;
   final String questionText;
-  final String selectedOption; // option TEXT (e.g. "No"), not the key
+  final String? selectedOption; // option TEXT (e.g. "No"), not the key. null = unanswered
   final bool isCorrect;
   final String? consequenceText; // null when correct
 
@@ -18,7 +18,7 @@ class QuestionBreakdown {
     return QuestionBreakdown(
       questionId: json['question_id'] as int,
       questionText: json['question_text'] as String,
-      selectedOption: json['selected_option'] as String,
+      selectedOption: json['selected_option'] as String?,
       isCorrect: json['is_correct'] as bool,
       consequenceText: json['consequence_text'] as String?,
     );
