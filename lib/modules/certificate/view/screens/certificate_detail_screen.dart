@@ -63,6 +63,7 @@ class CertificateDetailScreen extends ConsumerWidget {
   }
 
   Widget _buildContent(BuildContext context, CertificateModel cert) {
+    final shareUrl = cert.shareUrl;
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
@@ -118,55 +119,57 @@ class CertificateDetailScreen extends ConsumerWidget {
             ],
           ),
         ),
-        const SizedBox(height: 20),
-        Text(
-          'Verification link',
-          style: TextStyle(
-            color: onSurfaceColor,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: surfaceCards,
-            borderRadius: BorderRadius.circular(kCardRadius),
-            border: Border.all(color: glossOutline),
-          ),
-          child: SelectableText(
-            cert.fullVerifyUrl,
-            style: TextStyle(color: mutedTextColor, fontSize: 12, height: 1.4),
-          ),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton.icon(
-            onPressed: () async {
-              await Clipboard.setData(ClipboardData(text: cert.fullVerifyUrl));
-              if (!context.mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Verification link copied')),
-              );
-            },
-            icon: const Icon(Icons.copy, size: 18),
-            label: const Text(
-              'Copy verification link',
-              style: TextStyle(fontWeight: FontWeight.w600),
+                if (shareUrl != null) ...[
+          const SizedBox(height: 20),
+          Text(
+            'Verification link',
+            style: TextStyle(
+              color: onSurfaceColor,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
             ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: actionHighlight,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(kCardRadius),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: surfaceCards,
+              borderRadius: BorderRadius.circular(kCardRadius),
+              border: Border.all(color: glossOutline),
+            ),
+            child: SelectableText(
+              shareUrl,
+              style: TextStyle(color: mutedTextColor, fontSize: 12, height: 1.4),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                await Clipboard.setData(ClipboardData(text: shareUrl));
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Verification link copied')),
+                );
+              },
+              icon: const Icon(Icons.copy, size: 18),
+              label: const Text(
+                'Copy verification link',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: actionHighlight,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(kCardRadius),
+                ),
               ),
             ),
           ),
-        ),
+        ],
       ],
     );
   }

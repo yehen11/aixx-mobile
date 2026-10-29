@@ -6,8 +6,9 @@ class MockCertificateApi implements ICertificateApi {
   /// Flip to true to preview the empty state on the Certificates tab.
   static const bool simulateEmpty = false;
 
-  // Shapes match the backend samples. Id 14 matches the attempt id and the
+  // Shapes match the backend. Id 14 matches the attempt id and the
   // 409 ALREADY_PASSED certificate_id used by MockQuizApi.
+  // verify_url is the public web link and verify_api_url the JSON endpoint.
   static const List<Map<String, dynamic>> _certificates = [
     {
       'id': 14,
@@ -16,7 +17,8 @@ class MockCertificateApi implements ICertificateApi {
       'course_slug': 'general-ai-knowledge-for-everyday-life',
       'score': 90,
       'issued_at': '2026-10-14T09:30:00+00:00',
-      'verify_url': '/api/certificate/verify/mock14token',
+      'verify_url': 'https://aixx.com.sg/certificate/verify/mock14token',
+      'verify_api_url': '/api/certificate/verify/mock14token',
     },
     {
       'id': 5,
@@ -25,7 +27,8 @@ class MockCertificateApi implements ICertificateApi {
       'course_slug': 'ai-foundation',
       'score': 85,
       'issued_at': '2026-10-10T12:00:00+00:00',
-      'verify_url': '/api/certificate/verify/abc123',
+      'verify_url': 'https://aixx.com.sg/certificate/verify/abc123',
+      'verify_api_url': '/api/certificate/verify/abc123',
     },
   ];
 
@@ -52,7 +55,7 @@ class MockCertificateApi implements ICertificateApi {
 
     final options = RequestOptions(path: '/certificate/$id');
 
-        var matches = simulateEmpty
+    var matches = simulateEmpty
         ? <Map<String, dynamic>>[]
         : _certificates.where((c) => c['id'] == id).toList();
 
@@ -67,7 +70,8 @@ class MockCertificateApi implements ICertificateApi {
           'course_slug': 'general-ai-knowledge-for-everyday-life',
           'score': 90,
           'issued_at': DateTime.now().toIso8601String(),
-          'verify_url': '/api/certificate/verify/mock-cert-token-$id',
+          'verify_url': 'https://aixx.com.sg/certificate/verify/mock-cert-token-$id',
+          'verify_api_url': '/api/certificate/verify/mock-cert-token-$id',
         },
       ];
     }
