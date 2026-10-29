@@ -5,7 +5,7 @@ import '../../model/login_request.dart';
 import '../../model/register_request.dart';
 
 class MockAuthApi implements IAuthApi {
-  static const String _mockOtp = '123456';
+  static const String _mockOtp = '111222';
   static const String _mockToken = 'mock_auth_token';
 
   @override

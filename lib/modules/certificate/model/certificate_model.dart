@@ -5,7 +5,8 @@ class CertificateModel {
   final String courseSlug;
   final double score; // percentage, e.g. 85
   final DateTime? issuedAt;
-  final String verifyUrl; // relative, e.g. /api/certificate/verify/abc123
+  final String verifyUrl; // full public web link once deployed, else relative
+  final String? verifyApiUrl; // JSON endpoint, only for checking in code
 
   const CertificateModel({
     required this.id,
@@ -15,20 +16,20 @@ class CertificateModel {
     required this.score,
     required this.issuedAt,
     required this.verifyUrl,
+    this.verifyApiUrl,
   });
 
-  static const String _host = 'https://api.aixx.com.sg';
-
-  /// verify_url arrives relative, so prefix the host.
-  String get fullVerifyUrl {
-    if (verifyUrl.startsWith('http')) return verifyUrl;
-    final path = verifyUrl.startsWith('/') ? verifyUrl : '/$verifyUrl';
-    return '$_host$path';
+  /// The public link to show and share. Null until the backend sends a full
+  /// URL, because the old relative value points at a JSON endpoint.
+  String? get shareUrl {
+    final u = verifyUrl.trim();
+    if (u.startsWith('http://') || u.startsWith('https://')) return u;
+    return null;
   }
 
   String get scoreLabel => '${score.round()}%';
 
-    /// e.g. "10 Oct 2026". Empty when the backend sent no date.
+  /// e.g. "10 Oct 2026". Empty when the backend sent no date.
   String get issuedLabel {
     final d = issuedAt;
     if (d == null) return '';
@@ -50,6 +51,7 @@ class CertificateModel {
       score: (json['score'] as num?)?.toDouble() ?? 0,
       issuedAt: DateTime.tryParse((json['issued_at'] ?? '') as String)?.toLocal(),
       verifyUrl: (json['verify_url'] ?? '') as String,
+      verifyApiUrl: json['verify_api_url'] as String?,
     );
   }
 }
