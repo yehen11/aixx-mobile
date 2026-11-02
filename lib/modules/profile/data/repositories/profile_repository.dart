@@ -1,17 +1,19 @@
-import '../../model/profile_model.dart';
-import '../../model/result_history_item_model.dart';
+import 'package:dio/dio.dart';
+
 import '../../model/update_profile_request.dart';
-import '../apis/profile_api.dart';
+import '../apis/i_profile_api.dart';
 
 class ProfileRepository {
-  final ProfileApi _api = ProfileApi();
+  final IProfileApi _api;
 
-  Future<ProfileModel> getProfile() => _api.getProfile();
+  ProfileRepository(this._api);
 
-  Future<ProfileModel> updateProfile(
-    UpdateProfileRequest request,
-  ) =>
+  Future<Response> getProfile() => _api.getProfile();
+
+  Future<Response> updateProfile(UpdateProfileRequest request) =>
       _api.updateProfile(request);
 
-  Future<List<ResultHistoryItemModel>> getResults() => _api.getResults();
+  Future<Response> getResults() => _api.getResults();
+
+  Future<Response> getModuleResults() => _api.getModuleResults();
 }

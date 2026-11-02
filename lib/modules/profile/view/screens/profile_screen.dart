@@ -7,6 +7,7 @@ import '../../../../services/providers/profile_provider.dart';
 import '../../../../themes/utils.dart';
 import '../../model/update_profile_request.dart';
 import '../../../../services/core/logout_handler.dart';
+import 'package:dio/dio.dart';
 
 /// Profile screen.
 ///
@@ -67,6 +68,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     _initialized = true;
   }
 
+    String _saveError(Object e) {
+    if (e is DioException) {
+      final data = e.response?.data;
+      if (data is Map && data['message'] is String) {
+        return data['message'] as String;
+      }
+    }
+    return 'Something went wrong. Please try again.';
+  }
+
   Future<void> _save() async {
     final fullName =
         '${_firstNameController.text.trim()} '
@@ -83,7 +94,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       await updateProfile(
         ref,
         UpdateProfileRequest(
-          name: fullName,
+          fullName: fullName,
         ),
       );
 
@@ -99,7 +110,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to save: $e'),
+          content: Text('Failed to save: ${_saveError(e)}'),
           backgroundColor: errorColor,
         ),
       );
@@ -243,6 +254,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(profileProvider);
     final resultsAsync = ref.watch(resultHistoryProvider);
+    final modulesAsync = ref.watch(moduleResultsProvider);
 
     return Scaffold(
       backgroundColor: canvasBase,
@@ -509,42 +521,40 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     color: errorColor,
                   ),
                 ),
-                data: (results) {
-                  final completedModules = results.length;
+                
+                data: (results) => modulesAsync.when(
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (err, _) => Text(
+                    'Failed to load progress',
+                    style: TextStyle(color: errorColor),
+                  ),
+                  data: (modules) {
+                    final modulesDone = modules.where((m) => m.passed).length;
+                    final assessmentsPassed =
+                        results.where((r) => r.passed).length;
 
-                  final avgScore = results.isEmpty
-                      ? 0
-                      : (results
-                                  .map((r) => r.score)
-                                  .reduce(
-                                    (a, b) => a + b,
-                                  ) /
-                              results.length)
-                          .round();
-
-                  return Row(
-                    children: [
-                      Expanded(
-                        child: _statCard(
-                          icon:
-                              Icons.check_circle_outline,
-                          label: 'Modules Completed',
-                          value: '$completedModules',
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: _statCard(
+                            icon: Icons.menu_book_outlined,
+                            label: 'Modules Completed',
+                            value: '$modulesDone',
+                          ),
                         ),
-                      ),
-
-                      const SizedBox(width: 12),
-
-                      Expanded(
-                        child: _statCard(
-                          icon: Icons.bar_chart,
-                          label: 'Avg. Score',
-                          value: '$avgScore / 6',
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _statCard(
+                            icon: Icons.check_circle_outline,
+                            label: 'Assessments Passed',
+                            value: '$assessmentsPassed',
+                          ),
                         ),
-                      ),
-                    ],
-                  );
-                },
+                      ],
+                    );
+                  },
+                ),
               ),
 
               const SizedBox(height: 24),
@@ -632,7 +642,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _editField(
+    Widget _editField(
     String label,
     TextEditingController controller,
   ) {
@@ -649,28 +659,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
         const SizedBox(height: 6),
 
-        Container(
-          height: 44,
-          padding:
-              const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: canvasBase,
-            borderRadius:
-                BorderRadius.circular(kCardRadius),
-            border: Border.all(
-              color: glossOutline,
-            ),
+        // The app theme already draws the border (and the blue focus
+        // outline), so there's no outer bordered container here.
+        TextField(
+          controller: controller,
+          style: TextStyle(
+            color: onSurfaceColor,
+            fontSize: 14,
           ),
-          child: TextField(
-            controller: controller,
-            style: TextStyle(
-              color: onSurfaceColor,
-              fontSize: 14,
-            ),
-            decoration:
-                const InputDecoration(
-              border: InputBorder.none,
-              isDense: true,
+          decoration: InputDecoration(
+            fillColor: canvasBase,
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 13,
             ),
           ),
         ),

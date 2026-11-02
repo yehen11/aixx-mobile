@@ -26,6 +26,7 @@ Future<void> performLogout(WidgetRef ref, BuildContext context) async {
   ref.invalidate(profileProvider);
   ref.invalidate(resultHistoryProvider);
   ref.invalidate(certificateListProvider);
+  ref.invalidate(moduleResultsProvider);
 
   context.go(AppRoutes.login);
 }

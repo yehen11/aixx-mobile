@@ -4,86 +4,57 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../services/providers/profile_provider.dart';
 import '../../../../themes/utils.dart';
+import '../../model/module_result_item_model.dart';
 import '../../model/result_history_item_model.dart';
 
-/// Results History — lists every past module attempt.
-/// Matches GET /api/assessment/results: "Orders results chronologically
-/// descending" — mock data below is already in that order.
+/// Past Results: final assessment attempts (GET /assessment/results) and
+/// module quiz results (GET /me/module-results).
 class ResultsHistoryScreen extends ConsumerWidget {
   const ResultsHistoryScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final resultsAsync = ref.watch(resultHistoryProvider);
+    final assessmentsAsync = ref.watch(resultHistoryProvider);
+    final modulesAsync = ref.watch(moduleResultsProvider);
 
     return Scaffold(
       backgroundColor: canvasBase,
       body: SafeArea(
         child: Column(
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 14,
-              ),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: glossOutline),
-                ),
-              ),
-              child: Row(
+            _header(context),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(20),
                 children: [
-                  InkWell(
-                    borderRadius: BorderRadius.circular(20),
-                    onTap: () => context.pop(),
-                    child: Icon(
-                      Icons.arrow_back,
-                      size: 20,
-                      color: onSurfaceColor,
+                  _sectionTitle('Final Assessments'),
+                  ..._section<ResultHistoryItemModel>(
+                    assessmentsAsync,
+                    emptyText: 'No assessments taken yet',
+                    tile: (item) => _ResultCard(
+                      scoreLabel: item.scoreLabel,
+                      accent: item.passed ? successColor : errorColor,
+                      title: item.courseTitle,
+                      subtitle: 'Final assessment',
+                      statusLabel: item.passed ? 'Passed' : 'Not passed',
+                      dateLabel: item.dateLabel,
                     ),
                   ),
-                  const SizedBox(width: 14),
-                  Text(
-                    'Past Results',
-                    style: TextStyle(
-                      color: onSurfaceColor,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
+                  const SizedBox(height: 12),
+                  _sectionTitle('Module Quizzes'),
+                  ..._section<ModuleResultItemModel>(
+                    modulesAsync,
+                    emptyText: 'No modules attempted yet',
+                    tile: (item) => _ResultCard(
+                      scoreLabel: item.bestScoreLabel,
+                      accent: item.passed ? successColor : errorColor,
+                      title: item.course,
+                      subtitle: '${item.moduleName} · ${item.attemptsLabel}',
+                      statusLabel: item.passed ? 'Passed' : 'Not passed yet',
+                      dateLabel: item.dateLabel,
                     ),
                   ),
                 ],
-              ),
-            ),
-            Expanded(
-              child: resultsAsync.when(
-                loading: () => const Center(
-                  child: CircularProgressIndicator(),
-                ),
-                error: (err, _) => Center(
-                  child: Text(
-                    'Failed to load results: $err',
-                    style: TextStyle(color: errorColor),
-                  ),
-                ),
-                data: (results) {
-                  if (results.isEmpty) {
-                    return Center(
-                      child: Text(
-                        'No completed modules yet',
-                        style: TextStyle(color: mutedTextColor),
-                      ),
-                    );
-                  }
-
-                  return ListView.separated(
-                    padding: const EdgeInsets.all(20),
-                    itemCount: results.length,
-                    separatorBuilder: (_, __) =>
-                        const SizedBox(height: 12),
-                    itemBuilder: (context, index) =>
-                        _ResultTile(item: results[index]),
-                  );
-                },
               ),
             ),
           ],
@@ -91,19 +62,100 @@ class ResultsHistoryScreen extends ConsumerWidget {
       ),
     );
   }
+
+  Widget _header(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: glossOutline)),
+      ),
+      child: Row(
+        children: [
+          InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: () => context.pop(),
+            child: Icon(Icons.arrow_back, size: 20, color: onSurfaceColor),
+          ),
+          const SizedBox(width: 14),
+          Text(
+            'Past Results',
+            style: TextStyle(
+              color: onSurfaceColor,
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sectionTitle(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: onSurfaceColor,
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
+  /// One section of the list, with its own loading, error and empty states.
+  List<Widget> _section<T>(
+    AsyncValue<List<T>> async, {
+    required String emptyText,
+    required Widget Function(T item) tile,
+  }) {
+    return async.when<List<Widget>>(
+      loading: () => const [
+        Padding(
+          padding: EdgeInsets.all(24),
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      ],
+      error: (err, _) => [
+        Text('Failed to load results: $err',
+            style: TextStyle(color: errorColor)),
+      ],
+      data: (items) {
+        if (items.isEmpty) {
+          return [Text(emptyText, style: TextStyle(color: mutedTextColor))];
+        }
+        return [
+          for (final item in items)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: tile(item),
+            ),
+        ];
+      },
+    );
+  }
 }
 
-class _ResultTile extends StatelessWidget {
-  final ResultHistoryItemModel item;
+class _ResultCard extends StatelessWidget {
+  final String scoreLabel;
+  final Color accent;
+  final String title;
+  final String subtitle;
+  final String statusLabel;
+  final String dateLabel;
 
-  const _ResultTile({
-    required this.item,
+  const _ResultCard({
+    required this.scoreLabel,
+    required this.accent,
+    required this.title,
+    required this.subtitle,
+    required this.statusLabel,
+    required this.dateLabel,
   });
 
   @override
   Widget build(BuildContext context) {
-    final passed = (item.score / 6) >= 0.8;
-
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -114,19 +166,19 @@ class _ResultTile extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
-              color: (passed ? successColor : errorColor)
-                  .withOpacity(0.1),
+              color: accent.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Center(
               child: Text(
-                '${item.score}',
+                scoreLabel,
                 style: TextStyle(
-                  color: passed ? successColor : errorColor,
+                  color: accent,
                   fontWeight: FontWeight.w700,
+                  fontSize: 13,
                 ),
               ),
             ),
@@ -137,7 +189,9 @@ class _ResultTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.moduleTitle,
+                  title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: onSurfaceColor,
                     fontWeight: FontWeight.w600,
@@ -146,23 +200,32 @@ class _ResultTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  item.courseTitle,
+                  subtitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: mutedTextColor,
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: mutedTextColor, fontSize: 12),
                 ),
               ],
             ),
           ),
-          Text(
-            '${item.createdAt.day}/${item.createdAt.month}',
-            style: TextStyle(
-              color: mutedTextColor,
-              fontSize: 12,
-            ),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                statusLabel,
+                style: TextStyle(
+                  color: accent,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                dateLabel,
+                style: TextStyle(color: mutedTextColor, fontSize: 11),
+              ),
+            ],
           ),
         ],
       ),
