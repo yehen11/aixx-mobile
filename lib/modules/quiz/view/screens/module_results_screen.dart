@@ -5,6 +5,8 @@ import '../../../../routes/app_routes.dart';
 import '../../../../themes/utils.dart';
 import '../../model/module_quiz_result_model.dart';
 import 'quiz_session_screen.dart' show QuizSessionArgs;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../services/providers/course_provider.dart';
 
 /// Carries both the result AND the course slug, since the API response
 /// alone doesn't include the slug — needed to build "Next Module" nav.
@@ -18,16 +20,40 @@ class ModuleResultsArgs {
   });
 }
 
-class ModuleResultsScreen extends StatelessWidget {
+class ModuleResultsScreen extends ConsumerWidget {
   final ModuleResultsArgs args;
 
   const ModuleResultsScreen({super.key, required this.args});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final result = args.result;
     final resultColor = result.passed ? successColor : errorColor;
     final wrongAnswers = result.results.where((r) => !r.isCorrect).toList();
+
+
+    // Module titles come from the course contents list Course Contents loaded.
+    final modules =
+        ref.watch(moduleListProvider(args.courseSlug)).valueOrNull?.modules;
+
+    String titleFor(int moduleIndex) {
+      if (modules != null) {
+        for (final m in modules) {
+          if (m.moduleIndex == moduleIndex) return m.title;
+        }
+      }
+      return 'Module $moduleIndex';
+    }
+
+    final buttonStyle = ElevatedButton.styleFrom(
+      backgroundColor: actionHighlight,
+      foregroundColor: Colors.white,
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(kCardRadius),
+      ),
+    );
+
 
     return Scaffold(
       backgroundColor: canvasBase,
@@ -91,45 +117,67 @@ class ModuleResultsScreen extends StatelessWidget {
 
               const SizedBox(height: 40),
 
-              if (result.passed && result.nextModule != null && result.nextModule!.unlocked)
+                            if (result.passed &&
+                  result.nextModule != null &&
+                  result.nextModule!.unlocked)
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      // TODO: route through the Study Material screen first,
-                      // once built, instead of straight into the next quiz.
                       context.pushReplacement(
                         AppRoutes.studyMaterial,
                         extra: QuizSessionArgs(
                           courseSlug: args.courseSlug,
                           moduleIndex: result.nextModule!.moduleIndex,
-                          moduleTitle: 'Module ${result.nextModule!.moduleIndex}',
+                          moduleTitle:
+                              titleFor(result.nextModule!.moduleIndex),
                         ),
                       );
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: actionHighlight,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kCardRadius)),
+                    style: buttonStyle,
+                    child: const Text(
+                      'Next Module',
+                      style: TextStyle(fontWeight: FontWeight.w600),
                     ),
-                    child: const Text('Next Module', style: TextStyle(fontWeight: FontWeight.w600)),
                   ),
                 )
-              else
+              else if (!result.passed) ...[
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    // Restart this module from its study material.
+                    onPressed: () => context.pushReplacement(
+                      AppRoutes.studyMaterial,
+                      extra: QuizSessionArgs(
+                        courseSlug: args.courseSlug,
+                        moduleIndex: result.moduleIndex,
+                        moduleTitle: titleFor(result.moduleIndex),
+                      ),
+                    ),
+                    style: buttonStyle,
+                    child: const Text(
+                      'Try Again',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () => context.go(AppRoutes.dashboard),
+                  child: Text(
+                    'Back to Hub',
+                    style: TextStyle(color: mutedTextColor),
+                  ),
+                ),
+              ] else
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () => context.go(AppRoutes.dashboard),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: actionHighlight,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kCardRadius)),
-                    ),
-                    child: Text(
-                      result.passed ? 'Back to Hub' : 'Try Again',
-                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    style: buttonStyle,
+                    child: const Text(
+                      'Back to Hub',
+                      style: TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
