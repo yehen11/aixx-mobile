@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../routes/app_routes.dart';
+import '../../../../services/providers/course_provider.dart';
 import '../../../../services/providers/module_quiz_provider.dart';
+import '../../../../services/providers/profile_provider.dart';
 import '../../../../themes/utils.dart';
 import '../../model/module_quiz_content_model.dart';
 import 'module_results_screen.dart' show ModuleResultsArgs;
@@ -62,6 +64,10 @@ class _QuizSessionScreenState extends ConsumerState<QuizSessionScreen> {
       );
 
       if (!mounted) return;
+
+      // Progress may have changed, so make Course Contents refetch.
+      ref.invalidate(moduleListProvider(widget.args.courseSlug));
+      ref.invalidate(moduleResultsProvider);
 
       context.pushReplacement(
         AppRoutes.moduleResults,

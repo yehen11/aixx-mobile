@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../routes/app_routes.dart';
+import '../../../../services/providers/profile_provider.dart';
 import '../../../../services/providers/quiz_provider.dart';
 import '../../../../themes/utils.dart';
 import '../../model/attempt_model.dart';
@@ -203,6 +204,8 @@ class _FinalAssessmentScreenState extends ConsumerState<FinalAssessmentScreen> {
       final result = CompleteResultModel.fromJson(response.data as Map<String, dynamic>);
 
       if (!mounted) return;
+
+      ref.invalidate(resultHistoryProvider);
 
          if (result.passed) {
            ref.invalidate(certificateListProvider);

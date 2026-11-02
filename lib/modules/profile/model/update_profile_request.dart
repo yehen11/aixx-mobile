@@ -1,21 +1,19 @@
-/// Request payload for updating a profile.
-///
-/// TODO: Endpoint (PUT /api/auth/profile) and exact field names are
-/// NOT confirmed yet — asked the backend dev, awaiting reply.
-///
-/// Sends a single `name` field for now, matching the real Alumni
-/// table's current schema (no firstName/lastName split exists yet).
+/// Payload for PUT /me. The backend accepts full_name, phone and country.
+/// avatar_url is read-only for now, since avatar upload isn't built.
 class UpdateProfileRequest {
-  final String name;
-  final String? avatarUrl;
+  final String fullName;
+  final String? phone;
+  final String? country;
 
   UpdateProfileRequest({
-    required this.name,
-    this.avatarUrl,
+    required this.fullName,
+    this.phone,
+    this.country,
   });
 
   Map<String, dynamic> toJson() => {
-        'name': name,
-        if (avatarUrl != null) 'avatarUrl': avatarUrl,
+        'full_name': fullName,
+        if (phone != null) 'phone': phone,
+        if (country != null) 'country': country,
       };
 }

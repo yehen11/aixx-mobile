@@ -1,46 +1,51 @@
+/// One final assessment attempt from GET /assessment/results.
 class ResultHistoryItemModel {
-  final int id;
-  final String moduleTitle;
-  final String courseTitle;
-  final int score;
-  final DateTime createdAt;
+  final int attemptId;
+  final String courseTitle; // "training" in the API
+  final String courseSlug;
+  final double score; // percentage, e.g. 85
+  final bool passed;
+  final DateTime? completedAt;
+  final String? certificateToken; // null when the attempt failed
 
   const ResultHistoryItemModel({
-    required this.id,
-    required this.moduleTitle,
+    required this.attemptId,
     required this.courseTitle,
+    required this.courseSlug,
     required this.score,
-    required this.createdAt,
+    required this.passed,
+    required this.completedAt,
+    required this.certificateToken,
   });
 
-  factory ResultHistoryItemModel.fromJson(
-    Map<String, dynamic> json,
-  ) {
-    final module = json['module'];
-    final course = json['course'];
+  /// The certificate id equals the attempt id. Null for a failed attempt.
+  int? get certificateId => certificateToken == null ? null : attemptId;
+
+  String get scoreLabel => '${score.round()}%';
+
+  /// e.g. "14 Oct 2026". Empty when the backend sent no date.
+  String get dateLabel {
+    final d = completedAt;
+    if (d == null) return '';
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return '${d.day} ${months[d.month - 1]} ${d.year}';
+  }
+
+  factory ResultHistoryItemModel.fromJson(Map<String, dynamic> json) {
+    final token = json['certificate_token'] as String?;
 
     return ResultHistoryItemModel(
-      id: json['id'] as int,
-
-      moduleTitle:
-          json['moduleTitle'] as String? ??
-          (module is Map<String, dynamic>
-              ? module['title'] as String?
-              : null) ??
-          'Module',
-
-      courseTitle:
-          json['courseTitle'] as String? ??
-          (course is Map<String, dynamic>
-              ? course['title'] as String?
-              : null) ??
-          'Course',
-
-      score: json['score'] as int,
-
-      createdAt: DateTime.parse(
-        json['createdAt'] as String,
-      ),
+      attemptId: (json['attempt_id'] as num).toInt(),
+      courseTitle: (json['training'] ?? '') as String,
+      courseSlug: (json['training_slug'] ?? '') as String,
+      score: (json['score'] as num?)?.toDouble() ?? 0,
+      passed: json['passed'] as bool? ?? false,
+      completedAt:
+          DateTime.tryParse((json['completed_at'] ?? '') as String)?.toLocal(),
+      certificateToken: (token == null || token.isEmpty) ? null : token,
     );
   }
 }

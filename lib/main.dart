@@ -23,6 +23,8 @@ Future<void> main() async {
     container.invalidate(profileProvider);
     container.invalidate(resultHistoryProvider);
     container.invalidate(certificateListProvider);
+    container.invalidate(moduleResultsProvider);
+
     router.go(AppRoutes.login);
   };
 
