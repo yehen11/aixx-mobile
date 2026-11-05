@@ -42,7 +42,7 @@ class IssuedCertificate {
   factory IssuedCertificate.fromJson(Map<String, dynamic> json) {
     return IssuedCertificate(
       id: json['id'] as int,
-      token: json['token'] as String,
+      token: json['certificate_token'] as String,
       issuedAt: json['issued_at'] != null
           ? DateTime.tryParse(json['issued_at'] as String)
           : null,

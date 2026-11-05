@@ -181,7 +181,7 @@ class MockQuizApi implements IQuizApi {
         'certificate': passed
             ? {
                 'id': attemptId,
-                'token': token,
+                'certificate_token': token,
                 'issued_at': DateTime.now().toIso8601String(),
                 'verify_url': '/certificate/verify/$token',
               }
