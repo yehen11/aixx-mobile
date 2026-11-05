@@ -163,6 +163,11 @@ class _FinalAssessmentScreenState extends ConsumerState<FinalAssessmentScreen> {
     }
   }
 
+    void _previous() {
+    if (_currentIndex == 0 || _busy) return;
+    setState(() => _currentIndex--);
+  }
+
   Future<void> _next() async {
     final attempt = _attempt!;
     final question = attempt.questions[_currentIndex];
@@ -201,7 +206,20 @@ class _FinalAssessmentScreenState extends ConsumerState<FinalAssessmentScreen> {
       }
 
       final response = await repository.completeAttempt(attempt.attemptId);
-      final result = CompleteResultModel.fromJson(response.data as Map<String, dynamic>);
+
+      // /complete succeeded, so the attempt is graded on the server.
+      // From here Finish must never come back, or it could be sent twice.
+      final CompleteResultModel result;
+      try {
+        result = CompleteResultModel.fromJson(response.data as Map<String, dynamic>);
+      } catch (_) {
+        if (!mounted) return;
+        ref.invalidate(resultHistoryProvider);
+        ref.invalidate(certificateListProvider);
+        _showError('Your assessment was submitted, but we could not show the result. Please check Past Results.');
+        context.pop();
+        return;
+      }
 
       if (!mounted) return;
 
@@ -460,21 +478,34 @@ class _FinalAssessmentScreenState extends ConsumerState<FinalAssessmentScreen> {
             ),
           ),
         ),
-        Padding(
+                Padding(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-          child: SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: canProceed ? _next : null,
-              style: _primaryButtonStyle(),
-              child: _busy
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation(Colors.white)),
-                    )
-                  : Text(isLast ? 'Finish' : 'Next', style: const TextStyle(fontWeight: FontWeight.w600)),
-            ),
+          child: Row(
+            children: [
+              if (_currentIndex > 0) ...[
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: _busy ? null : _previous,
+                    style: _secondaryButtonStyle(),
+                                        child: Text('Previous', style: TextStyle(color: onSurfaceColor, fontWeight: FontWeight.w600)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+              ],
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: canProceed ? _next : null,
+                  style: _primaryButtonStyle(),
+                  child: _busy
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation(Colors.white)),
+                        )
+                      : Text(isLast ? 'Finish' : 'Next', style: const TextStyle(fontWeight: FontWeight.w600)),
+                ),
+              ),
+            ],
           ),
         ),
       ],

@@ -24,7 +24,7 @@ class AiksModel {
 /// Matches GET /me: { profile{...}, entitlements{...}, aiks{...}|null }.
 class ProfileModel {
   final int id;
-  final String uuid; // also sent as X-Student-Token until Bearer is supported
+  final String uuid;
   final String registrationId;
   final String fullName;
   final String email;
