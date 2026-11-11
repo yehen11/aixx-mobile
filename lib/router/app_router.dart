@@ -2,7 +2,6 @@
 @Author - yehenSamarasinghe
 @Date - 2026/08/27
 */
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../layout/main_shell.dart';
 import '../modules/auth/view/screens/auth_screen.dart';

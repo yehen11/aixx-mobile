@@ -30,7 +30,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   final _confirmPasswordController = TextEditingController();
   final _countryController = TextEditingController();
   String _language = 'english';
-  String _countryCode = '+94';
+  final String _countryCode = '+94';
   bool _isLoading = false;
 
   // Error state for live validation
@@ -55,10 +55,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: errorColor),
     );
-  }
-
-  bool _isTestModeEnabled() {
-    return const bool.fromEnvironment('USE_TEST_MODE', defaultValue: true);
   }
 
   Future<void> _submit() async {
@@ -102,18 +98,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         country: _countryController.text.trim(),
       );
 
-      // Test mode is runtime-controlled so the analyzer does not flag the branch as dead code.
-      final testMode = _isTestModeEnabled();
-
       final RegisterResponse result = await ref.read(
         signUpUserProvider(model).future,
       );
 
 if (!mounted) return;
 
-print('Successful signup for: ${result.email}');
-
-// Temporary: navigate to OTP in the next step.
 if (!mounted) return;
 Navigator.of(context).pop();
 context.go(
