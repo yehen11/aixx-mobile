@@ -80,13 +80,54 @@ class _QuizSessionScreenState extends ConsumerState<QuizSessionScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Submit failed: $e'), backgroundColor: errorColor),
+        SnackBar(
+            content: Text('Submit failed: $e'), backgroundColor: errorColor),
       );
 
       setState(() {
         _submitting = false;
       });
     }
+  }
+
+  Future<void> _confirmExit() async {
+    if (_submitting) return;
+
+    // Nothing answered yet, so there is nothing to lose.
+    if (_selectedOptionByQuestionId.isEmpty) {
+      context.pop();
+      return;
+    }
+
+    final leave = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: surfaceCards,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(kCardRadius),
+        ),
+        title: Text(
+          'Leave quiz?',
+          style: TextStyle(color: onSurfaceColor, fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          'Your answers so far will be lost.',
+          style: TextStyle(color: mutedTextColor),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text('Keep going', style: TextStyle(color: actionHighlight)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text('Leave', style: TextStyle(color: errorColor)),
+          ),
+        ],
+      ),
+    );
+
+    if (leave == true && mounted) context.pop();
   }
 
   @override
@@ -98,155 +139,194 @@ class _QuizSessionScreenState extends ConsumerState<QuizSessionScreen> {
       )),
     );
 
-    return Scaffold(
-      backgroundColor: canvasBase,
-      body: SafeArea(
-        child: contentAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stackTrace) => Center(
-            child: Text('Failed to load quiz: $error', style: TextStyle(color: errorColor)),
-          ),
-          data: (content) {
-            final questions = content.questions;
+    return PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) _confirmExit();
+        },
+        child: Scaffold(
+          backgroundColor: canvasBase,
+          body: SafeArea(
+            child: contentAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stackTrace) => Center(
+                child: Text('Failed to load quiz: $error',
+                    style: TextStyle(color: errorColor)),
+              ),
+              data: (content) {
+                final questions = content.questions;
 
-            if (questions.isEmpty) {
-              return Center(
-                child: Text('No questions available.', style: TextStyle(color: onSurfaceColor)),
-              );
-            }
+                if (questions.isEmpty) {
+                  return Center(
+                    child: Text('No questions available.',
+                        style: TextStyle(color: onSurfaceColor)),
+                  );
+                }
 
-            final question = questions[_currentIndex];
-            final selectedOption = _selectedOptionByQuestionId[question.id];
-            final isLast = _currentIndex == questions.length - 1;
-            final canProceed = selectedOption != null;
+                final question = questions[_currentIndex];
+                final selectedOption = _selectedOptionByQuestionId[question.id];
+                final isLast = _currentIndex == questions.length - 1;
+                final canProceed = selectedOption != null;
 
-            return Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
-                  child: Row(
-                    children: [
-                      InkWell(
-                        borderRadius: BorderRadius.circular(20),
-                        onTap: _submitting ? null : () => context.pop(),
-                        child: Icon(Icons.close, color: mutedTextColor),
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+                      child: Row(
+                        children: [
+                          InkWell(
+                            borderRadius: BorderRadius.circular(20),
+                            onTap: _submitting ? null : _confirmExit,
+                            child: Icon(Icons.close, color: mutedTextColor),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              widget.args.moduleTitle,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  color: mutedTextColor, fontSize: 13),
+                            ),
+                          ),
+                          Text(
+                            'Question ${_currentIndex + 1} of ${questions.length}',
+                            style: TextStyle(
+                                color: onSurfaceColor,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          widget.args.moduleTitle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: mutedTextColor, fontSize: 13),
-                        ),
-                      ),
-                      Text(
-                        'Question ${_currentIndex + 1} of ${questions.length}',
-                        style: TextStyle(color: onSurfaceColor, fontSize: 12, fontWeight: FontWeight.w600),
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(3),
-                    child: LinearProgressIndicator(
-                      value: (_currentIndex + 1) / questions.length,
-                      minHeight: 5,
-                      backgroundColor: surfaceCards,
-                      valueColor: AlwaysStoppedAnimation(actionHighlight),
                     ),
-                  ),
-                ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          question.question,
-                          style: TextStyle(color: onSurfaceColor, fontSize: 18, fontWeight: FontWeight.w600, height: 1.4),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(3),
+                        child: LinearProgressIndicator(
+                          value: (_currentIndex + 1) / questions.length,
+                          minHeight: 5,
+                          backgroundColor: surfaceCards,
+                          valueColor: AlwaysStoppedAnimation(actionHighlight),
                         ),
-                        const SizedBox(height: 24),
-                        ...question.options.entries.map((entry) {
-                          final optionKey = entry.key;
-                          final optionText = entry.value;
-                          final isSelected = selectedOption == optionKey;
+                      ),
+                    ),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              question.question,
+                              style: TextStyle(
+                                  color: onSurfaceColor,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  height: 1.4),
+                            ),
+                            const SizedBox(height: 24),
+                            ...question.options.entries.map((entry) {
+                              final optionKey = entry.key;
+                              final optionText = entry.value;
+                              final isSelected = selectedOption == optionKey;
 
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(kCardRadius),
-                              onTap: _submitting ? null : () => _selectOption(question.id, optionKey),
-                              child: Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: isSelected ? actionHighlight.withOpacity(0.1) : surfaceCards,
-                                  borderRadius: BorderRadius.circular(kCardRadius),
-                                  border: Border.all(
-                                    color: isSelected ? actionHighlight : glossOutline,
-                                    width: isSelected ? 1.5 : 1,
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: InkWell(
+                                  borderRadius:
+                                      BorderRadius.circular(kCardRadius),
+                                  onTap: _submitting
+                                      ? null
+                                      : () =>
+                                          _selectOption(question.id, optionKey),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: isSelected
+                                          ? actionHighlight.withOpacity(0.1)
+                                          : surfaceCards,
+                                      borderRadius:
+                                          BorderRadius.circular(kCardRadius),
+                                      border: Border.all(
+                                        color: isSelected
+                                            ? actionHighlight
+                                            : glossOutline,
+                                        width: isSelected ? 1.5 : 1,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          isSelected
+                                              ? Icons.radio_button_checked
+                                              : Icons.radio_button_off,
+                                          size: 20,
+                                          color: isSelected
+                                              ? actionHighlight
+                                              : mutedTextColor,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Text(optionText,
+                                              style: TextStyle(
+                                                  color: onSurfaceColor,
+                                                  fontSize: 14)),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-                                      size: 20,
-                                      color: isSelected ? actionHighlight : mutedTextColor,
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Text(optionText, style: TextStyle(color: onSurfaceColor, fontSize: 14)),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        }),
-                      ],
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: !canProceed || _submitting
-                          ? null
-                          : () {
-                              if (isLast) {
-                                _submit(questions);
-                              } else {
-                                setState(() {
-                                  _currentIndex++;
-                                });
-                              }
-                            },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: actionHighlight,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kCardRadius)),
+                              );
+                            }),
+                          ],
+                        ),
                       ),
-                      child: _submitting
-                          ? const SizedBox(
-                              height: 20, width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation(Colors.white)),
-                            )
-                          : Text(isLast ? 'Submit' : 'Next', style: const TextStyle(fontWeight: FontWeight.w600)),
                     ),
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
-      ),
-    );
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: !canProceed || _submitting
+                              ? null
+                              : () {
+                                  if (isLast) {
+                                    _submit(questions);
+                                  } else {
+                                    setState(() {
+                                      _currentIndex++;
+                                    });
+                                  }
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: actionHighlight,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.circular(kCardRadius)),
+                          ),
+                          child: _submitting
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor:
+                                          AlwaysStoppedAnimation(Colors.white)),
+                                )
+                              : Text(isLast ? 'Submit' : 'Next',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w600)),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ));
   }
 }
